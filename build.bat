@@ -40,15 +40,40 @@ goto :msvc
 
 REM ---------- no toolchain -------------------------------------------------
 :nocompiler
+set "VSANY="
+if not exist "%VSWHERE%" goto :plainmsg
+"%VSWHERE%" -latest -products * -property installationPath > "%TEMP%\aa_vsany.txt" 2>nul
+set /p VSANY=<"%TEMP%\aa_vsany.txt"
+del "%TEMP%\aa_vsany.txt" >nul 2>nul
+
+if defined VSANY goto :workloadmsg
+
+:plainmsg
 echo.
-echo [build] No C++ compiler found.
+echo [build] No C++ compiler found on this machine.
 echo.
-echo   Play right away: download the prebuilt exe from
+echo   Fastest - just play: download the prebuilt exe from
 echo       https://github.com/zanni098/ascii-arena-cpp/releases
 echo.
-echo   Or install the free MSVC Build Tools (per-user, no admin needed):
-echo       winget install --id Microsoft.VisualStudio.2022.BuildTools -e
+echo   To build, install the free MSVC Build Tools WITH the C++ workload:
+echo       winget install --id Microsoft.VisualStudio.2022.BuildTools -e --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
 echo   then run build.bat again.
+echo.
+exit /b 1
+
+:workloadmsg
+echo.
+echo [build] Visual Studio is installed, but without the C++ workload:
+echo         !VSANY!
+echo.
+echo   Add the workload from a terminal (it will ask for elevation):
+echo       winget install --id Microsoft.VisualStudio.2022.BuildTools -e --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+echo.
+echo   Or open "Visual Studio Installer", click Modify on the Build Tools entry,
+echo   tick "Desktop development with C++" and apply.
+echo.
+echo   Fastest meanwhile: prebuilt exe
+echo       https://github.com/zanni098/ascii-arena-cpp/releases
 echo.
 exit /b 1
 
