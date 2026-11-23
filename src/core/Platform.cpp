@@ -12,6 +12,7 @@
 #else
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <termios.h>
 #include <unistd.h>
 #endif
@@ -205,7 +206,17 @@ InputState Terminal::poll() {
     unsigned char buf[256];
     ssize_t n = 0;
     if (rawMode_) {
-        n = ::read(STDIN_FILENO, buf, sizeof(buf) - 1);
+        // select() with a zero timeout is the portable way to poll a terminal:
+        // it never blocks, whatever the driver's VMIN/VTIME semantics are.
+        fd_set readable;
+        FD_ZERO(&readable);
+        FD_SET(STDIN_FILENO, &readable);
+        timeval noWait{0, 0};
+        if (::select(STDIN_FILENO + 1, &readable, nullptr, nullptr, &noWait) > 0 &&
+            FD_ISSET(STDIN_FILENO, &readable)) {
+            n = ::read(STDIN_FILENO, buf, sizeof(buf) - 1);
+            if (n < 0) n = 0;
+        }
     }
     const double now = nowSeconds();
     for (ssize_t i = 0; i < n; ++i) {

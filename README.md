@@ -163,6 +163,12 @@ Architecture, class diagrams and the mapping of C++ concepts to files are in
 ## Automated checks
 
 ```bash
+# headless: builds, then two identical seeded runs must match
+bash tests/smoke_test.sh
+
+# end-to-end: drives the real binary through a pty (menu -> play -> pause -> quit)
+python3 tests/interactive_test.py
+
 # 90 seconds of deterministic simulation (score, wave, kills, no crash)
 ./ascii_arena --demo 90 --seed 12345
 
@@ -170,6 +176,9 @@ Architecture, class diagrams and the mapping of C++ concepts to files are in
 g++ -std=c++17 -g -fsanitize=address,undefined -Isrc src/main.cpp src/core/*.cpp src/game/*.cpp -o asan
 ./asan --demo 120 --seed 99
 ```
+
+The interactive test needs a POSIX pty (Linux/macOS); the headless and sanitizer
+checks run anywhere.
 
 The demo prints a one-line summary such as:
 
