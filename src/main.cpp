@@ -34,6 +34,7 @@ void printUsage() {
         "Automated run (no console drawing, used by the smoke test):\n"
         "  --demo <seconds>        simulate for N seconds with a scripted player\n"
         "  --dump <dir>            write ASCII frames into <dir>\n"
+        "  --dump-ansi             include ANSI colour in the frame dumps\n"
         "  --dump-every <sec>      frame dump interval (default 0.5)\n"
         "  --screens <dir>         write one frame of every screen (for docs)\n");
 }
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
     double dumpEvery = 0.5;
     std::string dumpDir;
     bool autoUpgrade = true;
+    bool ansiDump = false;
     std::string screensDir;
     unsigned int seedOverride = 0;
     float difficulty = 0.0f;
@@ -77,6 +79,8 @@ int main(int argc, char** argv) {
             demoSeconds = std::atof(value("--demo").c_str());
         } else if (arg == "--dump") {
             dumpDir = value("--dump");
+        } else if (arg == "--dump-ansi") {
+            ansiDump = true;
         } else if (arg == "--dump-every") {
             dumpEvery = std::atof(value("--dump-every").c_str());
         } else if (arg == "--seed") {
@@ -158,6 +162,7 @@ int main(int argc, char** argv) {
 
     if (demoSeconds > 0.0) {
         Game game(config, config.arenaWidth, config.arenaHeight);
+        game.setAnsiDump(ansiDump);
         game.runHeadless(demoSeconds, dumpEvery, dumpDir, autoUpgrade);
         return 0;
     }
