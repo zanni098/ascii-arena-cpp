@@ -1,7 +1,7 @@
 @echo off
 REM ASCII ARENA - Windows build script.
-REM Works from a normal Command Prompt: it locates Visual Studio by itself,
-REM and falls back to MinGW g++ if that is what you have.
+REM Works from a normal Command Prompt: finds Visual Studio by itself, and
+REM falls back to MinGW g++ / clang++ when that is what you have installed.
 
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
@@ -9,7 +9,7 @@ cd /d "%~dp0"
 set "OUTDIR=build"
 if not exist "%OUTDIR%" mkdir "%OUTDIR%"
 
-REM ---------- 1. is a compiler already on PATH? -----------------------------
+REM ---------- compiler already on PATH? ------------------------------------
 where cl >nul 2>nul
 if not errorlevel 1 goto :msvc
 where g++ >nul 2>nul
@@ -17,37 +17,42 @@ if not errorlevel 1 goto :mingw
 where clang++ >nul 2>nul
 if not errorlevel 1 goto :mingw
 
-REM ---------- 2. find Visual Studio and load its environment ----------------
+REM ---------- locate Visual Studio ----------------------------------------
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-if not exist "%VSWHERE%" set "VSWHERE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE%" goto :findvs
+set "VSWHERE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE%" goto :findvs
+goto :nocompiler
 
-if exist "%VSWHERE%" (
-    for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSPATH=%%i"
-    if defined VSPATH (
-        if exist "!VSPATH!\VC\Auxiliary\Build\vcvars64.bat" (
-            echo [build] using Visual Studio: !VSPATH!
-            call "!VSPATH!\VC\Auxiliary\Build\vcvars64.bat" >nul
-        )
-    )
-)
+:findvs
+"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > "%TEMP%\aa_vspath.txt" 2>nul
+set "VSPATH="
+set /p VSPATH=<"%TEMP%\aa_vspath.txt"
+del "%TEMP%\aa_vspath.txt" >nul 2>nul
+if not defined VSPATH goto :nocompiler
+if not exist "!VSPATH!\VC\Auxiliary\Build\vcvars64.bat" goto :nocompiler
 
+echo [build] using Visual Studio: !VSPATH!
+call "!VSPATH!\VC\Auxiliary\Build\vcvars64.bat" >nul
 where cl >nul 2>nul
-if not errorlevel 1 goto :msvc
+if errorlevel 1 goto :nocompiler
+goto :msvc
 
-:noCompiler
+REM ---------- no toolchain -------------------------------------------------
+:nocompiler
 echo.
 echo [build] No C++ compiler found.
 echo.
-echo   Option A - install the free MSVC Build Tools (one command, no admin needed):
-echo       winget install --id Microsoft.VisualStudio.2022.BuildTools -e
-echo       then re-run build.bat
-echo.
-echo   Option B - just play: download the prebuilt ascii_arena.exe from
+echo   Play right away: download the prebuilt exe from
 echo       https://github.com/zanni098/ascii-arena-cpp/releases
+echo.
+echo   Or install the free MSVC Build Tools (per-user, no admin needed):
+echo       winget install --id Microsoft.VisualStudio.2022.BuildTools -e
+echo   then run build.bat again.
 echo.
 exit /b 1
 
-REM ---------- MSVC ----------------------------------------------------------
+REM ---------- MSVC ---------------------------------------------------------
 :msvc
 echo [build] compiling with MSVC ...
 cl /nologo /std:c++17 /EHsc /O2 /W4 /utf-8 /Isrc ^
@@ -76,5 +81,5 @@ exit /b 0
 
 :failed
 echo.
-echo [build] compilation failed. Copy the error above when asking for help.
+echo [build] compilation failed - copy the error above when asking for help.
 exit /b 1

@@ -34,7 +34,8 @@ build.bat
 `build.bat` looks for `cl.exe` on PATH, then for a Visual Studio installation via
 vswhere and loads its environment automatically, then falls back to `g++` /
 `clang++`. It builds `build\ascii_arena.exe` and needs no Developer Command
-Prompt.
+Prompt. `run.bat` does the same and then launches the game, so it can simply be
+double-clicked.
 
 No compiler installed at all? Either grab the prebuilt `ascii_arena.exe` from
 [Releases](https://github.com/zanni098/ascii-arena-cpp/releases), or install the
