@@ -20,10 +20,29 @@ Recorded playthrough (12 s, seeded demo run):
 |---|---|
 | OS | Windows 10/11 (also builds on Linux/macOS terminals) |
 | Compiler | MSVC 2019/2022 (`/std:c++17`) or MinGW-w64 g++ 8+ |
-| Build tool | CMake 3.16+ (recommended) or the provided `build.bat` / one-line g++ command |
+| Build tool | **none needed**: `build.bat` finds your compiler itself (CMake optional) |
 | Console | at least 60x22 characters; **100x34 recommended** |
 
 ## Build
+
+### Fastest: one command, no CMake
+
+```bat
+build.bat
+```
+
+`build.bat` looks for `cl.exe` on PATH, then for a Visual Studio installation via
+vswhere and loads its environment automatically, then falls back to `g++` /
+`clang++`. It builds `build\ascii_arena.exe` and needs no Developer Command
+Prompt.
+
+No compiler installed at all? Either grab the prebuilt `ascii_arena.exe` from
+[Releases](https://github.com/zanni098/ascii-arena-cpp/releases), or install the
+free build tools (per-user, no admin rights):
+
+```bat
+winget install --id Microsoft.VisualStudio.2022.BuildTools -e
+```
 
 ### Option A - CMake (Visual Studio)
 
@@ -37,9 +56,10 @@ Visual Studio users can also use *File > Open > Folder...* on this directory:
 VS picks up `CMakeLists.txt` automatically and gives you a full debugging
 experience (breakpoints, watch, call stack).
 
-### Option B - build.bat (MSVC command line)
+### Option B - x64 Native Tools Command Prompt
 
-Open **x64 Native Tools Command Prompt for VS** and run:
+If you already have that prompt open, `build.bat` uses the compiler on PATH
+directly:
 
 ```bat
 build.bat
