@@ -1,0 +1,9 @@
+build/
+out*/
+shots*/
+
+docs_shots/
+*.exe
+*.obj
+*.o
+highscores.txt
