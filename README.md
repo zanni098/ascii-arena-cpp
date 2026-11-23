@@ -10,6 +10,10 @@ executable.
 
 ![Gameplay](docs/02_gameplay.png)
 
+Recorded playthrough (12 s, seeded demo run):
+
+![Playthrough](docs/playthrough.gif)
+
 ## Requirements
 
 | | |
